@@ -106,7 +106,12 @@ void Distancia() {
 void Transmitir() {
   Wire.beginTransmission(23);
   Wire.write(keypressed);
-  //Wire.write(temp);
-  //Wire.write(distancia);
+
+  Wire.write((byte)(temp & 0xFF));         // Envía el byte menos significativo de temp
+  Wire.write((byte)((temp >> 8) & 0xFF));  // Envía el byte más significativo de temp (si es necesario)
+
+  Wire.write((byte)(distancia & 0xFF));         // Envía el byte menos significativo de distancia
+  Wire.write((byte)((distancia >> 8) & 0xFF));  // Envía el byte más significativo de distancia (si es necesario)
+
   Wire.endTransmission();
 }
