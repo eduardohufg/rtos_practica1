@@ -1,12 +1,12 @@
 /*Controlador encargado de recibir las entradas del teclado matricial,
   así como los datos recolactados por el sensor de temperatura y 
   el sensor ultrasónico, para posteriormente enviarlos a un periférico*/
-//--------------------------------------------------------------------------------------------------
+//-------------------------------------------------------------------------------------------------------------
 // Librerías
 #include<Keypad.h>    // Controlar el teclado matricial
 #include<DHT11.h>     // Controlar el DHT11
 #include<Wire.h>      // Utilizar el protoclo I2C
-//---------------------------------------------------------------------------------------------------
+//-------------------------------------------------------------------------------------------------------------
 // Configurar el teclado
 const byte numRows = 4; // Número de filas en el teclado
 const byte numCols = 4; // Número de columnas en el teclado
@@ -25,25 +25,23 @@ byte colPins[numCols] = {30, 32, 34, 36};  // Columnas 1 a 4
 // Iniciar un objeto de tipo Keypad
 Keypad myKeypad = Keypad(makeKeymap(keymap), rowPins, colPins, numRows, numCols);
 char keypressed;
-//---------------------------------------------------------------------
+//-------------------------------------------------------------------------------------------------------------
 // Señal de temperatura del sensor DHT11
 // Iniciar un objeto de tipo DHT11
 DHT11 dht11(2); // Conexión digital del sensor con la placa Arduino
 int temp;
-//----------------------------------------------------------
+//-------------------------------------------------------------------------------------------------------------
 // Señal de distancia mediante el sensor ultrasónico HC-SR04
 #define TriggerPin 13
 #define EchoPin 12
 int distancia;
 long tiempo;
+//-------------------------------------------------------------------------------------------------------------
 
-volatile int state = LOW;
+unsigned long lastDistanceTime = 0;
+unsigned long lastTempTime = 0;
 
-unsigned long previousMillis = 0;
-const long interval = 1000;  // Intervalo de tiempo en milisegundos
-
-bool keyPressedFlag = false;
-char lastKeyPressed = '\0'; // Carácter previamente recibido
+bool transmissionSuccess = false; // Variable para almacenar el estado de la transmisión
 
 void setup() {
   Wire.begin();          // Unirse al bus i2c como master
@@ -53,27 +51,38 @@ void setup() {
 }
 
 void loop() {
-  char key = myKeypad.getKey();
+  Teclado();
 
+  unsigned long currentTime = millis();
+
+  // Calcular la distancia cada 3 segundos
+  if (currentTime - lastDistanceTime >= 4000) {
+    Distancia();
+    lastDistanceTime = currentTime;
+  }
+
+  // Calcular la temperatura cada 2 segundos
+  if (currentTime - lastTempTime >= 3000) {
+    Temperatura();
+    lastTempTime = currentTime;
+  }
+
+  Transmitir();
+
+  // Esperar un breve tiempo para permitir que el esclavo procese los datos
+  delay(10);
+
+}
+
+void Teclado() {
+  char key = myKeypad.getKey();
   if (key) {
-    char keypresse = key;
+    keypressed = key;
+    Serial.print("Caracter: ");
     Serial.println(key);
   }
-  //Teclado();
-  Temperatura();
-  Distancia();
-  Transmitir();
 }
 
-// Obtener y enviar las entradas del teclado matricial
-void Teclado() {
-  if (keypressed != NO_KEY) {
-    Serial.print("Caracter: ");
-    Serial.println(keypressed);
-  }
-}
-
-// Obtener y enviar los datos del sensor de temperatura y humedad DHT11 
 void Temperatura() {
   temp = dht11.readTemperature();
   Serial.print("Temperatura: ");
@@ -81,15 +90,14 @@ void Temperatura() {
   Serial.println(" °C");
 }
 
-// Obtener y enviar los datos del sensor de distancia ultrasónico HC-SR04
 void Distancia() {
-  digitalWrite(TriggerPin, LOW);      // generar un pulso limpio ponemos a LOW 4us
+  digitalWrite(TriggerPin, LOW);
   delayMicroseconds(4);
-  digitalWrite(TriggerPin, HIGH);     //generamos Trigger (disparo) de 10us
+  digitalWrite(TriggerPin, HIGH);
   delayMicroseconds(10);
   digitalWrite(TriggerPin, LOW);
-  tiempo = pulseIn(EchoPin, HIGH);  //medir el tiempo entre pulsos en microsegundos
-  distancia = tiempo / 2 / 29.1; //convertir a distancia en cm
+  tiempo = pulseIn(EchoPin, HIGH);
+  distancia = tiempo / 2 / 29.1;
   Serial.print("Distancia: ");
   Serial.print(distancia);
   Serial.println(" cm");
@@ -97,8 +105,8 @@ void Distancia() {
 
 void Transmitir() {
   Wire.beginTransmission(23);
-    Wire.write(keypressed);
-    Wire.write(temp);
-    Wire.write(distancia);
-    Wire.endTransmission();
+  Wire.write(keypressed);
+  //Wire.write(temp);
+  //Wire.write(distancia);
+  Wire.endTransmission();
 }
