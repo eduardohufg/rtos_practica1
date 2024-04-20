@@ -40,6 +40,7 @@ long tiempo;
 
 unsigned long lastDistanceTime = 0;
 unsigned long lastTempTime = 0;
+unsigned long lastSendTime = 0;
 
 bool transmissionSuccess = false; // Variable para almacenar el estado de la transmisión
 
@@ -55,22 +56,23 @@ void loop() {
 
   unsigned long currentTime = millis();
 
-  // Calcular la distancia cada 3 segundos
-  if (currentTime - lastDistanceTime >= 4000) {
+  // Obtener la distancia cada medio segundo
+  if (currentTime - lastDistanceTime >= 500) {
     Distancia();
     lastDistanceTime = currentTime;
   }
 
-  // Calcular la temperatura cada 2 segundos
-  if (currentTime - lastTempTime >= 3000) {
+  // Obtener la temperatura cada 2 segundos
+  if (currentTime - lastTempTime >= 2000) {
     Temperatura();
     lastTempTime = currentTime;
   }
 
-  Transmitir();
-
-  // Esperar un breve tiempo para permitir que el esclavo procese los datos
-  delay(10);
+  // Enviar los datos cada 100 milisegundos
+  if (currentTime - lastSendTime >= 100) {
+    Transmitir();
+    lastSendTime = currentTime;
+  }
 
 }
 
