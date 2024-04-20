@@ -45,6 +45,11 @@ void loop() {
     lcd.print(distancia);
     lcd.print(" cm");
 
+    // Mostrar el carácter recibido en la segunda fila de la LCD
+    lcd.setCursor(0, 1);
+    lcd.print("Key: ");
+    lcd.print(keypressed);
+
     // Verifica si la distancia es mayor a 20 y ajusta el pin D2
     if (distancia > 20) {
       digitalWrite(2, HIGH);
@@ -52,7 +57,6 @@ void loop() {
       digitalWrite(2, LOW);
     }
   }
-  //delay(100); // Reduce la frecuencia de actualización para estabilizar la pantalla
 }
 
 void receiveEvent(int howMany) {
