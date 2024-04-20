@@ -104,9 +104,21 @@ void Distancia() {
 }
 
 void Transmitir() {
+  Serial.println("Iniciando transmisión I2C...");
   Wire.beginTransmission(23);
   Wire.write(keypressed);
-  //Wire.write(temp);
-  //Wire.write(distancia);
-  Wire.endTransmission();
+  
+  Wire.write((byte)(temp & 0xFF));
+  Wire.write((byte)((temp >> 8) & 0xFF));
+  
+  Wire.write((byte)(distancia & 0xFF));
+  Wire.write((byte)((distancia >> 8) & 0xFF));
+  
+  byte error = Wire.endTransmission();
+  if (error) {
+    Serial.print("Error en la transmisión: ");
+    Serial.println(error);
+  } else {
+    Serial.println("Transmisión exitosa.");
+  }
 }
