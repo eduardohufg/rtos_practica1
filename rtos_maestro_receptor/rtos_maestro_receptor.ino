@@ -37,6 +37,15 @@ void TaskReceiveData(void *pvParameters) {
     temp |= Wire.read() << 8;
     distancia = Wire.read();
     distancia |= Wire.read() << 8;
+
+    Serial.print("Key pressed: ");
+    Serial.println(keypressed);
+    Serial.print("Temperature: ");
+    Serial.print(temp);
+    Serial.println(" C");
+    Serial.print("Distance: ");
+    Serial.print(distancia);
+    Serial.println(" cm");
     
     vTaskDelay(100 / portTICK_PERIOD_MS);
   }
