@@ -30,8 +30,8 @@ void setup() {
   xSemaphore = xSemaphoreCreateMutex();
 
   xTaskCreate(Teclado, "Teclado", 128, NULL, 1, NULL);
-  xTaskCreate(Temperatura, "Temperatura", 128, NULL, 1, NULL);
-  xTaskCreate(Distancia, "Distancia", 128, NULL, 1, NULL);
+  xTaskCreate(Temperatura, "Temperatura", 128, NULL, 3, NULL);
+  xTaskCreate(Distancia, "Distancia", 128, NULL, 2, NULL);
 
   vTaskStartScheduler();
   for (;;);
@@ -71,7 +71,8 @@ void Temperatura(void *pvParameters) {
     Serial.print("Temperatura: ");
     Serial.print(temp);
     Serial.println(" °C");
-    vTaskDelay(pdMS_TO_TICKS(1000));
+    vTaskDelay(pdMS_TO_TICKS(2000));  // Asegurar un delay adecuado entre lecturas
+
   }
 }
 
