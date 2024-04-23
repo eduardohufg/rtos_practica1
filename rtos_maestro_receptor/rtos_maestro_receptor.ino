@@ -10,7 +10,6 @@ char keypressed = 0;
 int temp = 0;
 int distancia = 0;
 
-
 void setup() {
   Wire.begin(); // Iniciar I2C como maestro
   Serial.begin(9600);
