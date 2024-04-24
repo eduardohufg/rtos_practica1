@@ -78,7 +78,7 @@ void TaskCheckDistance(void *pvParameters) {
   (void) pvParameters;
   for (;;) {
     if (xSemaphoreTake(xSemaphore, (TickType_t) 10) == pdTRUE) {
-      if (distancia > 20) {
+      if (temp >= 28) {
         digitalWrite(2, HIGH);
       } else {
         digitalWrite(2, LOW);
